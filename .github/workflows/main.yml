@@ -1,0 +1,30 @@
+name: Daily Gold Bot
+
+on:
+  schedule:
+    # Chạy vào lúc 2:00 sáng giờ UTC (tương đương 9:00 sáng giờ Việt Nam)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Tạo nút bấm để bạn có thể chạy thử bất cứ lúc nào
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Run bot script
+        env:
+          # Kết nối code với 2 mã Secrets bạn đã tạo
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python gold_bot.py
