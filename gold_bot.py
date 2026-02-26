@@ -30,31 +30,27 @@ def get_gold_data():
         table = soup.find("table", class_="table-radius")
         rows = table.find_all("tr")
         
-        # Header ngắn gọn hơn để tránh tràn dòng
         message = f"<b>🌟 GIÁ VÀNG SJC {update_time.split(' ')[1]} 🌟</b>\n"
+        message += "<i>📍 Đơn vị: nghìn đồng/chỉ</i>\n" # Dòng chú thích bạn yêu cầu [cite: 184, 762]
         message += "<code>Loại vàng   | Mua vào | Bán ra</code>\n"
         message += "<code>----------------------------</code>\n"
         
         for row in rows[1:10]: 
             cols = row.find_all("td")
             if len(cols) >= 3:
-                # Rút ngắn tên loại vàng để tiết kiệm diện tích
                 name = cols[0].get_text(strip=True).replace("Vàng ", "").replace("Nữ trang ", "NT ")[:10]
                 
-                # Giải mã giá
                 buy_cell, sell_cell = cols[1], cols[2]
                 buy = decode_nb_price(buy_cell["nb"]) if "nb" in buy_cell.attrs else buy_cell.get_text(strip=True)
                 sell = decode_nb_price(sell_cell["nb"]) if "nb" in sell_cell.attrs else sell_cell.get_text(strip=True)
                 
-                # Loại bỏ phần triệu cho gọn (ví dụ 18.100.000 -> 18.100)
-                # Hoặc giữ nguyên nhưng bỏ bớt khoảng trắng
+                # Rút gọn số (Ví dụ 18.100.000 -> 18.100) để hiện vừa 1 dòng [cite: 768, 769]
                 buy_short = buy.replace(".000", "").replace("webgiá.com", "---").strip()
                 sell_short = sell.replace(".000", "").replace("web giá", "---").strip()
 
-                # Cấu trúc 1 dòng: Emoji + Tên (10 ký tự) + Mua (6 ký tự) + Bán (6 ký tự)
-                message += f"🔸 <code>{name:<10} | {buy_short:>6} | {sell_short:>6}</code>\n"
+                message += f"🔸 <code>{name:<10} | {buy_short:>7} | {sell_short:>7}</code>\n"
 
-        # 3. LẤY ẢNH BIỂU ĐỒ
+        # 3. LẤY ẢNH BIỂU ĐỒ [cite: 9]
         chart_url = soup.find("meta", property="og:image")["content"] if soup.find("meta", property="og:image") else ""
 
         return message, chart_url
