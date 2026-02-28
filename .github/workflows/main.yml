@@ -2,9 +2,10 @@ name: Daily Gold Bot
 
 on:
   schedule:
-    # Chạy vào lúc 2:00 sáng giờ UTC (tương đương 9:00 sáng giờ Việt Nam)
-    - cron: '0 2 * * *'
-  workflow_dispatch: # Tạo nút bấm để bạn có thể chạy thử bất cứ lúc nào
+    # Chạy mỗi 4 tiếng, bắt đầu từ 0:00 UTC (tức 7:00 sáng VN)
+    # Các mốc chạy (giờ VN): 7h, 11h, 15h, 19h, 23h, 3h sáng
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Vẫn giữ nút bấm chạy thủ công
 
 jobs:
   build:
@@ -24,7 +25,6 @@ jobs:
 
       - name: Run bot script
         env:
-          # Kết nối code với 2 mã Secrets bạn đã tạo
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python gold_bot.py
