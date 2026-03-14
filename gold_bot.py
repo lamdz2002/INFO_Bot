@@ -26,10 +26,11 @@ def get_gold_data():
         response.encoding = 'utf-8'
         soup = BeautifulSoup(response.text, "html.parser")
         
-        # Lấy thời gian cập nhật
+        # 1. LẤY THỜI GIAN CẬP NHẬT
         time_tag = soup.find("h1", class_="h-head")
         update_time = time_tag.small.get_text(strip=True).split(' ')[-1] if time_tag else ""
 
+        # 2. LẤY BẢNG GIÁ VÀNG
         table = soup.find("table", class_="table-radius")
         rows = table.find_all("tr")
         
@@ -41,7 +42,7 @@ def get_gold_data():
         for row in rows[1:10]: 
             cols = row.find_all("td")
             if len(cols) >= 3:
-                # Viết tắt tên cực ngắn để dành chỗ cho thanh gạch |
+                # Viết tắt tên để đảm bảo hiển thị 1 dòng
                 raw_n = cols[0].get_text(strip=True).replace("Vàng ", "").replace("Nữ trang ", "NT ")
                 if "1L" in raw_n: name = "SJC 1L"
                 elif "5 chỉ" in raw_n: name = "SJC 5c"
@@ -50,16 +51,23 @@ def get_gold_data():
                 elif "99,99%" in raw_n: name = "NT99.9"
                 else: name = raw_n[:6]
                 
-                # Giải mã giá từ thuộc tính nb (đặc trưng của WebGia)
                 b_raw = decode_nb_price(cols[1]["nb"]) if "nb" in cols[1].attrs else cols[1].get_text(strip=True)
                 s_raw = decode_nb_price(cols[2]["nb"]) if "nb" in cols[2].attrs else cols[2].get_text(strip=True)
                 
                 buy, sell = format_to_k(b_raw), format_to_k(s_raw)
-
-                # Cấu trúc dòng: Tên(6) | Mua(5) | Bán(5) -> Tổng ~22 ký tự, chắc chắn không xuống dòng
                 message += f"🔸<code>{name:<6}|{buy:>5}|{sell:>5}</code>\n"
 
-        # Lấy ảnh biểu đồ từ meta tag của trang web
+        # 3. THÊM THÔNG TIN TÀI SẢN CÁ NHÂN (Lấy từ Variables)
+        # Nếu không tìm thấy biến, mặc định sẽ hiện "0"
+        vnd_asset = os.getenv("USER_VND", "0")
+        gold_asset = os.getenv("USER_GOLD", "0")
+        
+        message += "<code>----------------------</code>\n"
+        message += f"💰 <b>TÀI SẢN CỦA TÔI:</b>\n"
+        message += f" ├ Tiền mẹ đang cầm: <b>{vnd_asset}</b> VNĐ\n"
+        message += f" └ Vàng: <b>{gold_asset}</b> chỉ\n"
+
+        # 4. LẤY ẢNH BIỂU ĐỒ
         chart_url = soup.find("meta", property="og:image")["content"] if soup.find("meta", property="og:image") else ""
         return message, chart_url
     except Exception as e: return f"❌ Lỗi: {str(e)}", None
@@ -77,4 +85,4 @@ def send_to_telegram(text, image_url):
 
 if __name__ == "__main__":
     msg, img = get_gold_data()
-    send_to_telegram(msg, img)
+    send_to_telegram(msg, img) 
