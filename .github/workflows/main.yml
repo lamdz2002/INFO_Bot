@@ -1,11 +1,14 @@
 name: Daily Gold Bot
 
 on:
+  push:
+    branches:
+      - main  # Bot sẽ chạy ngay lập tức khi bạn update code từ máy tính lên GitHub
   schedule:
     # Chạy mỗi 4 tiếng, bắt đầu từ 0:00 UTC (tức 7:00 sáng VN)
-    # Các mốc chạy (giờ VN): 7h, 11h, 15h, 19h, 23h, 3h sáng
+    # Các mốc chạy dự kiến (giờ VN): 7h, 11h, 15h, 19h, 23h, 3h sáng
     - cron: '0 */4 * * *'
-  workflow_dispatch: # Vẫn giữ nút bấm chạy thủ công
+  workflow_dispatch: # Nút bấm chạy thủ công trên GitHub
 
 jobs:
   build:
@@ -25,6 +28,11 @@ jobs:
 
       - name: Run bot script
         env:
+          # Các mã bảo mật (Secrets)
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          
+          # Các biến tài sản (Variables) - Nhớ tạo trong mục Variables trên GitHub
+          USER_VND: ${{ vars.USER_VND }}
+          USER_GOLD: ${{ vars.USER_GOLD }}
         run: python gold_bot.py
